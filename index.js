@@ -57,7 +57,7 @@ async function getTopNews() {
   const response = await request(url, {
     dataType: 'json',
     headers: {
-      'Ocp-Apim-Subscription-Key': process.env.BINGNEWSKEY
+      'Ocp-Apim-Subscription-Key': process.env.BING_NEWS_KEY
     }
   })
   console.log(response)
@@ -69,7 +69,7 @@ async function searchNews(query) {
   const response = await request(url, {
     dataType: 'json',
     headers: {
-      'Ocp-Apim-Subscription-Key': process.env.BINGNEWSKEY
+      'Ocp-Apim-Subscription-Key': process.env.BING_NEWS_KEY
     }
   })
   console.log(response)
@@ -80,7 +80,7 @@ async function getTrendingNews() {
   const response = await request(url, {
     dataType: 'json',
     headers: {
-      'Ocp-Apim-Subscription-Key': process.env.BINGNEWSKEY
+      'Ocp-Apim-Subscription-Key': process.env.BING_NEWS_KEY
     }
   })
   console.log(response)
