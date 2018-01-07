@@ -156,15 +156,17 @@ async function sendNewsToGlip({
   text
 }) {
   try {
+    let replyText = text
     const attachments = formatNewsToMessages(news)
-    await sendGlipMessage({ groupId, text, attachments })
+    if (news.length === 0) {
+      replyText = replyText + ' No Results.'
+    }
+    await sendGlipMessage({ groupId, replyText, attachments })
     console.log('send to', groupId, 'successfully.')
   } catch (e) {
     console.error(e)
   }
 }
-
-let latestText = ''
 
 async function handleGlipMessage(message) {
   if (!message) {
@@ -175,11 +177,7 @@ async function handleGlipMessage(message) {
   }
   if (message.type === 'TextMessage') {
     console.log('message from glip:', message.text)
-    // if (latestText === message.text) {
-    //   return
-    // }
     if (message.text === 'ping') {
-      latestText = 'pong'
       await sendGlipMessage({ groupId: message.groupId, text: 'pong' })
       return
     }
@@ -192,14 +190,15 @@ async function handleGlipMessage(message) {
     if (aiRes.result.action === 'search_news') {
       const query = aiRes.result.parameters && aiRes.result.parameters.any
       const { news } = await searchNews(query)
+      let replyText
       if (query) {
-        latestText = `Related News about ${query}:`
+        replyText = `Related News about ${query}:`
       } else {
-        latestText = 'Related News'
+        replyText = 'Related News'
       }
       await sendNewsToGlip({
         groupId: message.groupId,
-        text: latestText,
+        text: replyText,
         news
       })
       return
@@ -208,17 +207,22 @@ async function handleGlipMessage(message) {
     if (aiRes.result.action === 'top_news') {
       const query = aiRes.result.parameters && aiRes.result.parameters.any
       const { news, link } = await getTopNews(query)
-      latestText = `[Current Top News:](${link})`
+      let replyText = 'Current Top News'
+      if (query) {
+        replyText = replyText + ' about ' + query
+      }
+      if (link) {
+        replyText = `[${replyText}]($link)`
+      }
       await sendNewsToGlip({
         groupId: message.groupId,
-        text: `[Current Top News:](${link})`,
+        text: replyText,
         news
       })
       return
     }
     if (aiRes.result.action === 'trending_topics') {
       const { news } = await getTrendingNews()
-      latestText = 'Trending topics:'
       await sendNewsToGlip({
         groupId: message.groupId,
         text: 'Trending topics:',
