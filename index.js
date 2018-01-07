@@ -21,8 +21,12 @@ let currentPerson = {};
 async function init() {
   try {
     const tokenData = await redis.getData('rc-oauth-token')
+    if (!tokenData) {
+      return
+    }
     platform.auth().setData(tokenData)
-    currentPerson = await platform.get('/glip/persons/~')
+    const personResponse = await platform.get('/glip/persons/~')
+    currentPerson = personResponse.json()
     console.log(currentPerson)
   } catch (e) {
     console.log(e)
@@ -54,7 +58,8 @@ app.get('/oauth', async (req, res) => {
     });
     const data = authResponse.json();
     await redis.setData(data, 'rc-oauth-token')
-    currentPerson = await platform.get('/glip/persons/~')
+    const personResponse = await platform.get('/glip/persons/~')
+    currentPerson = personResponse.json()
     console.log(currentPerson)
     console.log('oauth successfully.');
   } catch (e) {
