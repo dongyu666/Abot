@@ -22,7 +22,7 @@ async function init() {
   try {
     const tokenData = redis.getData('rc-oauth-token')
     platform.auth().setData(data)
-    currentPerson = await platform.get('/glip/persons/~')
+    // currentPerson = await platform.get('/glip/persons/~')
   } catch (e) {
     console.log(e)
     console.log('token not found')
@@ -51,7 +51,7 @@ app.get('/oauth', async (req, res) => {
     });
     const data = authResponse.json();
     await redis.setData(data, 'rc-oauth-token')
-    currentPerson = await platform.get('/glip/persons/~')
+    // currentPerson = await platform.get('/glip/persons/~')
     console.log('oauth successfully.');
   } catch (e) {
     console.log('oauth error:');
@@ -160,9 +160,9 @@ async function handleGlipMessage(message) {
   if (!message) {
     return
   }
-  if (message.creatorId === currentPerson.id) {
-    return
-  }
+  // if (message.creatorId === currentPerson.id) {
+  //   return
+  // }
   if (message.type === 'TextMessage') {
     console.log('message from glip:', message.text)
     if (message.text === 'ping') {
