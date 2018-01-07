@@ -212,7 +212,7 @@ async function handleGlipMessage(message) {
         replyText = replyText + ' about ' + query
       }
       if (link) {
-        replyText = `[${replyText}]($link)`
+        replyText = `[${replyText}](${link})`
       }
       await sendNewsToGlip({
         groupId: message.groupId,
