@@ -20,7 +20,7 @@ const platform = rcsdk.platform()
 let currentPerson = {};
 async function init() {
   try {
-    const tokenData = redis.getData('rc-oauth-token')
+    const tokenData = await redis.getData('rc-oauth-token')
     platform.auth().setData(data)
     currentPerson = await platform.get('/glip/persons/~')
     console.log(currentPerson)
