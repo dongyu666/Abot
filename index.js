@@ -137,6 +137,8 @@ function formatNewsToMessages(news) {
       type: 'Card',
       fallback: `[${n.name}](${n.url || n.webSearchUrl || n.readLink})`,
       text: n.description,
+      title: n.name,
+      title_link: n.url || n.webSearchUrl || n.readLink,
       imageUri: n.image && (n.image.contentUrl || n.image.url),
       author: {
         name: n.name,
