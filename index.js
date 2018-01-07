@@ -165,11 +165,11 @@ async function handleGlipMessage(message) {
       const { news, link } = await getTopNews()
       await sendNewsToGlip({
         groupId: message.groupId,
-        text: `[top news](${link})`,
+        text: `[Current Top News:](${link})`,
         news
       })
     } else if (message.text.startsWith('trending topics')) {
-      const { news, link } = await getTrendingNews()
+      const { news } = await getTrendingNews()
       await sendNewsToGlip({
         groupId: message.groupId,
         text: 'Trending topics:',
@@ -177,10 +177,10 @@ async function handleGlipMessage(message) {
       })
     } else if (message.text.startsWith('search news ')) {
       const query = message.text.replace('search news ', '')
-      const { news, link } = await searchNews(query)
+      const { news } = await searchNews(query)
       await sendNewsToGlip({
         groupId: message.groupId,
-        text: `[Related News >](${link})`,
+        text: `Related News about query:`,
         news
       })
     }
