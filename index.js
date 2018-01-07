@@ -141,7 +141,7 @@ async function sendNewsToGlip({
 }) {
   try {
     const attachments = formatNewsToMessages(news)
-    await sendGlipMessage(groupId, text, attachments)
+    await sendGlipMessage({ groupId, text, attachments })
   } catch (e) {
     console.error(e)
   }
