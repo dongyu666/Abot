@@ -1,4 +1,4 @@
-# Glip Bot Boilerplate
+# Glip AI News Bot
 
 A [Glip](https://glip.com/) News bot with Dialogflow. Deployed on heroku.
 
