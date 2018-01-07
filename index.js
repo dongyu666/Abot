@@ -22,12 +22,15 @@ async function init() {
   try {
     const tokenData = redis.getData('rc-oauth-token')
     platform.auth().setData(data)
-    // currentPerson = await platform.get('/glip/persons/~')
+    currentPerson = await platform.get('/glip/persons/~')
+    console.log(currentPerson)
   } catch (e) {
     console.log(e)
     console.log('token not found')
   }
 }
+
+init()
 
 const app = express()
 app.use(bodyParser.json())
@@ -51,7 +54,8 @@ app.get('/oauth', async (req, res) => {
     });
     const data = authResponse.json();
     await redis.setData(data, 'rc-oauth-token')
-    // currentPerson = await platform.get('/glip/persons/~')
+    currentPerson = await platform.get('/glip/persons/~')
+    console.log(currentPerson)
     console.log('oauth successfully.');
   } catch (e) {
     console.log('oauth error:');
@@ -72,6 +76,7 @@ async function getTopNews(entity) {
       'Ocp-Apim-Subscription-Key': process.env.BING_NEWS_KEY
     }
   })
+  console.log(response)
   if (response.status === 200) {
     const news = response.data.value || []
     return { news, link: response.data.webSearchUrl }
@@ -162,14 +167,14 @@ async function handleGlipMessage(message) {
   if (!message) {
     return
   }
-  // if (message.creatorId === currentPerson.id) {
-  //   return
-  // }
+  if (message.creatorId === currentPerson.id) {
+    return
+  }
   if (message.type === 'TextMessage') {
     console.log('message from glip:', message.text)
-    if (latestText === message.text) {
-      return
-    }
+    // if (latestText === message.text) {
+    //   return
+    // }
     if (message.text === 'ping') {
       latestText = 'pong'
       await sendGlipMessage({ groupId: message.groupId, text: 'pong' })
