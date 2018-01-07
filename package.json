@@ -1,7 +1,7 @@
 {
   "name": "glip-news-bot",
   "version": "0.0.1",
-  "description": "A Glip news bot",
+  "description": "A Glip news bot with Dialogflow",
   "license": "MIT",
   "scripts": {
     "start": "node index.js",
