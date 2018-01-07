@@ -121,8 +121,8 @@ async function sendGlipMessage({ groupId, text, attachments }) {
 
 function formatNewsToMessages(news) {
   const attachments = []
+  console.log(JSON.stringify(news && news[0], null, 2))
   news.forEach((n) => {
-    console.log(JSON.stringify(n, null, 2))
     attachments.push({
       type: 'Card',
       fallback: `[${n.name}](${n.url || n.webSearchUrl || n.readLink})`,
@@ -159,33 +159,39 @@ async function handleGlipMessage(message) {
     return
   }
   if (message.type === 'TextMessage') {
-    console.log(message.text)
+    console.log('message from glip:', message.text)
     if (message.text === 'ping') {
       await sendGlipMessage({ groupId: message.groupId, text: 'pong' })
       return
     }
     const aiRes = await apiAi.send(message.text, message.groupId)
-    console.log(JSON.stringify(aiRes, null, 2))
-    if (message.text.startsWith('top news')) {
+    if (!aiRes || !aiRes.result) {
+      return
+    }
+    if (aiRes.result.action === 'search_news') {
+      const query = aiRes.result.parameters && aiRes.result.parameters.any
+      const { news } = await searchNews(query)
+      await sendNewsToGlip({
+        groupId: message.groupId,
+        text: `Related News about query:`,
+        news
+      })
+      return
+    }
+    if (aiRes.result.action === 'top_news') {
       const { news, link } = await getTopNews()
       await sendNewsToGlip({
         groupId: message.groupId,
         text: `[Current Top News:](${link})`,
         news
       })
-    } else if (message.text.startsWith('trending topics')) {
+      return
+    }
+    if (aiRes.result.action === 'trending_topics') {
       const { news } = await getTrendingNews()
       await sendNewsToGlip({
         groupId: message.groupId,
         text: 'Trending topics:',
-        news
-      })
-    } else if (message.text.startsWith('search news ')) {
-      const query = message.text.replace('search news ', '')
-      const { news } = await searchNews(query)
-      await sendNewsToGlip({
-        groupId: message.groupId,
-        text: `Related News about query:`,
         news
       })
     }
