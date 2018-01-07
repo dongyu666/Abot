@@ -24,8 +24,8 @@ if (fs.existsSync(tokenFile)) { // restore token
 const app = express()
 app.use(bodyParser.json())
 
-app.get('/', function(req, res) {
-  res.send('Bot is working! Path Hit: ' + req.url);
+app.get('/', async (req, res) => {
+  res.send('Hi, Bot is working!');
 });
 
 app.get('/oauth', async (req, res) => {
@@ -51,9 +51,12 @@ app.get('/oauth', async (req, res) => {
   res.send('ok')
 })
 
-async function getTopNews() {
-  const url = "https://api.cognitive.microsoft.com/bing/v5.0/news/?"
-      + "category=" + results.response.entity + "&count=10&mkt=en-US&originalImg=true";
+async function getTopNews(entity) {
+  let url = "https://api.cognitive.microsoft.com/bing/v7.0/news/?"
+      + "count=10&mkt=en-US&originalImg=true";
+  if (entity) {
+    url = url + "&category=" + entity
+  }
   const response = await request(url, {
     dataType: 'json',
     headers: {
@@ -61,11 +64,16 @@ async function getTopNews() {
     }
   })
   console.log(response)
+  if (response.status === 200) {
+    const news = response.data.value || []
+    return { news, link: response.data.webSearchUrl }
+  }
+  return { news }
 }
 
 async function searchNews(query) {
-  const url = "https://api.cognitive.microsoft.com/bing/v5.0/news/search?q=" +
-    query + "&count=10&mkt=en-US&originalImg=true";
+  const url = "https://api.cognitive.microsoft.com/bing/v7.0/news/search?q=" +
+    query + "&count=10&mkt=en-us&originalImg=true";
   const response = await request(url, {
     dataType: 'json',
     headers: {
@@ -73,10 +81,16 @@ async function searchNews(query) {
     }
   })
   console.log(response)
+  if (response.status === 200) {
+    const news = response.data.value || []
+    return { news, link: response.data.webSearchUrl }
+  }
+  return { news }
 }
 
 async function getTrendingNews() {
-  const url = "https://api.cognitive.microsoft.com/bing/v5.0/news/trendingtopics?mkt=en-US&count=10";
+  const url = "https://api.cognitive.microsoft.com/bing/v7.0/news/trendingtopics?mkt=en-us&count=10";
+  console.log(url)
   const response = await request(url, {
     dataType: 'json',
     headers: {
@@ -84,6 +98,71 @@ async function getTrendingNews() {
     }
   })
   console.log(response)
+  if (response.status === 200) {
+    const news = response.data.value || []
+    return { news, link: response.data.webSearchUrl }
+  }
+  return { news }
+}
+
+async function sendGlipMessage({ groupId, text, attachments }) {
+  try {
+    await platform.post('/glip/posts', { groupId, text, attachments })
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+function formatNewsToMessages({
+  news,
+}) {
+  const attachments = []
+  news.forEach((n) => {
+    attachments.push({
+      type: 'Card',
+      fallback: `[${n.name}](${n.url})`,
+      text: n.description,
+      imageUri: n.image && n.image.contentUrl,
+      author: {
+        name: n.name,
+        uri: n.url
+      },
+      footnote: {
+        time: n.datePublished
+      }
+    })
+  })
+}
+
+async function sendNewsToGlip({
+  news,
+  groupId,
+  text
+}) {
+  try {
+    const attachments = formatNewsToMessages(news)
+    await sendGlipMessage(groupId, text, attachments)
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function handleGlipMessage(message) {
+  if (!message) {
+    return
+  }
+  if (message.type === 'TextMessage') {
+    console.log(message.text)
+    if (message.text === 'ping') {
+      await sendGlipMessage({groupId: message.groupId, text: 'pong' })
+    } else if (message.text.startsWith('top news')) {
+      const { news, link } = await getTopNews()
+      await sendNewsToGlip({
+        groupId: message.groupId,
+        text: `[top news](${link})`
+      })
+    }
+  }
 }
 
 app.post('/webhook', async (req, res) => {
@@ -97,17 +176,7 @@ app.post('/webhook', async (req, res) => {
   }
   const message = req.body.body
   const validationToken = req.get('validation-token')
-  if (message && message.type === 'TextMessage') {
-    console.log(message.text)
-    if (message.text === 'ping') {
-      try {
-        const response = await platform.post('/glip/posts', { groupId: message.groupId, text: 'pong' })
-        console.log(response)
-      } catch (e) {
-        console.error(e)
-      }
-    }
-  }
+  handleGlipMessage(message)
   if (validationToken) {
     res.set('validation-token', req.get('validation-token'))
   }
