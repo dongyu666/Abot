@@ -161,7 +161,7 @@ async function sendNewsToGlip({
     if (news.length === 0) {
       replyText = replyText + ' No Results.'
     }
-    await sendGlipMessage({ groupId, replyText, attachments })
+    await sendGlipMessage({ groupId, text: replyText, attachments })
     console.log('send to', groupId, 'successfully.')
   } catch (e) {
     console.error(e)
