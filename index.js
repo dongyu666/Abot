@@ -5,7 +5,7 @@ const fs = require('fs')
 const path = require('path')
 const request = require('urllib').request
 const bodyParser = require('body-parser')
-
+const redis = require('./redisStore')
 const pkg = require('./package.json')
 
 dotenv.config()
@@ -17,9 +17,11 @@ const rcsdk = new RingCentral({
 })
 const platform = rcsdk.platform()
 
-if (fs.existsSync(tokenFile)) { // restore token
-  platform.auth().setData(JSON.parse(fs.readFileSync(tokenFile, 'utf-8')))
-}
+redis.getData('rc-oauth-token').then((data) => {
+  platform.auth().setData(data)
+}).catch(() => {
+  console.log('token not found')
+})
 
 const app = express()
 app.use(bodyParser.json())
@@ -42,7 +44,7 @@ app.get('/oauth', async (req, res) => {
       redirectUri: `${process.env.GLIP_BOT_SERVER}/oauth`
     });
     const data = authResponse.json();
-    fs.writeFileSync(tokenFile, JSON.stringify(data)) // save token
+    await redis.setData(data, 'rc-oauth-token')
     console.log('oauth successfully.');
   } catch (e) {
     console.log('oauth error:');
