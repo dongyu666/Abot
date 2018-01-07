@@ -18,6 +18,7 @@ const rcsdk = new RingCentral({
 const platform = rcsdk.platform()
 
 redis.getData('rc-oauth-token').then((data) => {
+  console.log(data)
   platform.auth().setData(data)
 }).catch(() => {
   console.log('token not found')
@@ -44,6 +45,7 @@ app.get('/oauth', async (req, res) => {
       redirectUri: `${process.env.GLIP_BOT_SERVER}/oauth`
     });
     const data = authResponse.json();
+    console.log(data)
     await redis.setData(data, 'rc-oauth-token')
     console.log('oauth successfully.');
   } catch (e) {
@@ -70,7 +72,7 @@ async function getTopNews(entity) {
     const news = response.data.value || []
     return { news, link: response.data.webSearchUrl }
   }
-  return { news }
+  return { news: [] }
 }
 
 async function searchNews(query) {
@@ -87,7 +89,7 @@ async function searchNews(query) {
     const news = response.data.value || []
     return { news, link: response.data.webSearchUrl }
   }
-  return { news }
+  return { news: [] }
 }
 
 async function getTrendingNews() {
@@ -104,7 +106,7 @@ async function getTrendingNews() {
     const news = response.data.value || []
     return { news, link: response.data.webSearchUrl }
   }
-  return { news }
+  return { news: [] }
 }
 
 async function sendGlipMessage({ groupId, text, attachments }) {
@@ -115,9 +117,7 @@ async function sendGlipMessage({ groupId, text, attachments }) {
   }
 }
 
-function formatNewsToMessages({
-  news,
-}) {
+function formatNewsToMessages(news) {
   const attachments = []
   news.forEach((n) => {
     attachments.push({
