@@ -105,7 +105,7 @@ async function getTrendingNews() {
   if (response.status === 200) {
     const news = response.data.value || []
     console.log(news[0])
-    return { news, link: response.data.webSearchUrl }
+    return { news, link: response.data.webSearchUrl || response.data.readLink }
   }
   return { news: [] }
 }
@@ -121,10 +121,11 @@ async function sendGlipMessage({ groupId, text, attachments }) {
 function formatNewsToMessages(news) {
   const attachments = []
   news.forEach((n) => {
+    console.log(JSON.stringify(n, null, 2))
     attachments.push({
       type: 'Card',
-      fallback: `[${n.name}](${n.url})`,
-      text: n.description,
+      fallback: `[${n.name}](${n.url || n.webSearchUrl})`,
+      text: n.name,
       imageUri: n.image && n.image.contentUrl,
       author: {
         name: n.name,
@@ -171,15 +172,15 @@ async function handleGlipMessage(message) {
       const { news, link } = await getTrendingNews()
       await sendNewsToGlip({
         groupId: message.groupId,
-        text: `[top news](${link})`,
+        text: `[Trending topics >](${link})`,
         news
       })
     } else if (message.text.startsWith('search news ')) {
-      const query = message.text.replace('search news ')
+      const query = message.text.replace('search news ', '')
       const { news, link } = await searchNews(query)
       await sendNewsToGlip({
         groupId: message.groupId,
-        text: `[top news](${link})`,
+        text: `[Related News >](${link})`,
         news
       })
     }
