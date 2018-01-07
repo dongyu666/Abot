@@ -21,7 +21,7 @@ let currentPerson = {};
 async function init() {
   try {
     const tokenData = await redis.getData('rc-oauth-token')
-    platform.auth().setData(data)
+    platform.auth().setData(tokenData)
     currentPerson = await platform.get('/glip/persons/~')
     console.log(currentPerson)
   } catch (e) {
