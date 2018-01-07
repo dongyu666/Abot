@@ -132,6 +132,7 @@ function formatNewsToMessages(news) {
       }
     })
   })
+  return attachments
 }
 
 async function sendNewsToGlip({
