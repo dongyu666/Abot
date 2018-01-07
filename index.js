@@ -156,6 +156,8 @@ async function sendNewsToGlip({
   }
 }
 
+let latestText = ''
+
 async function handleGlipMessage(message) {
   if (!message) {
     return
@@ -165,7 +167,11 @@ async function handleGlipMessage(message) {
   // }
   if (message.type === 'TextMessage') {
     console.log('message from glip:', message.text)
+    if (latestText === message.text) {
+      return
+    }
     if (message.text === 'ping') {
+      latestText = 'pong'
       await sendGlipMessage({ groupId: message.groupId, text: 'pong' })
       return
     }
@@ -178,9 +184,14 @@ async function handleGlipMessage(message) {
     if (aiRes.result.action === 'search_news') {
       const query = aiRes.result.parameters && aiRes.result.parameters.any
       const { news } = await searchNews(query)
+      if (query) {
+        latestText = `Related News about ${query}:`
+      } else {
+        latestText = 'Related News'
+      }
       await sendNewsToGlip({
         groupId: message.groupId,
-        text: `Related News about ${query}:`,
+        text: latestText,
         news
       })
       return
@@ -189,6 +200,7 @@ async function handleGlipMessage(message) {
     if (aiRes.result.action === 'top_news') {
       const query = aiRes.result.parameters && aiRes.result.parameters.any
       const { news, link } = await getTopNews(query)
+      latestText = `[Current Top News:](${link})`
       await sendNewsToGlip({
         groupId: message.groupId,
         text: `[Current Top News:](${link})`,
@@ -198,6 +210,7 @@ async function handleGlipMessage(message) {
     }
     if (aiRes.result.action === 'trending_topics') {
       const { news } = await getTrendingNews()
+      latestText = 'Trending topics:'
       await sendNewsToGlip({
         groupId: message.groupId,
         text: 'Trending topics:',
