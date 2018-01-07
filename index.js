@@ -27,7 +27,7 @@ const app = express()
 app.use(bodyParser.json())
 
 app.get('/', async (req, res) => {
-  res.send('Hi, Bot is working!');
+  res.send('Hi, Bot is working!')
 });
 
 app.get('/oauth', async (req, res) => {
@@ -65,9 +65,10 @@ async function getTopNews(entity) {
       'Ocp-Apim-Subscription-Key': process.env.BING_NEWS_KEY
     }
   })
-  console.log(response)
+  console.log(response.data)
   if (response.status === 200) {
     const news = response.data.value || []
+    console.log(news[0])
     return { news, link: response.data.webSearchUrl }
   }
   return { news: [] }
@@ -82,9 +83,10 @@ async function searchNews(query) {
       'Ocp-Apim-Subscription-Key': process.env.BING_NEWS_KEY
     }
   })
-  console.log(response)
+  console.log(response.data)
   if (response.status === 200) {
     const news = response.data.value || []
+    console.log(news[0])
     return { news, link: response.data.webSearchUrl }
   }
   return { news: [] }
@@ -99,9 +101,10 @@ async function getTrendingNews() {
       'Ocp-Apim-Subscription-Key': process.env.BING_NEWS_KEY
     }
   })
-  console.log(response)
+  console.log(response.data)
   if (response.status === 200) {
     const news = response.data.value || []
+    console.log(news[0])
     return { news, link: response.data.webSearchUrl }
   }
   return { news: [] }
