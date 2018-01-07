@@ -1,5 +1,7 @@
+const dotenv = require('dotenv')
 const createClient = require('redis').createClient
 
+dotenv.config()
 const redisClient = createClient(process.env.REDIS_URL);
 
 redisClient.on('error', err => {

@@ -6,6 +6,7 @@ const path = require('path')
 const request = require('urllib').request
 const bodyParser = require('body-parser')
 const redis = require('./redisStore')
+const apiAi = require('./apiAi')
 const pkg = require('./package.json')
 
 dotenv.config()
@@ -160,8 +161,12 @@ async function handleGlipMessage(message) {
   if (message.type === 'TextMessage') {
     console.log(message.text)
     if (message.text === 'ping') {
-      await sendGlipMessage({groupId: message.groupId, text: 'pong' })
-    } else if (message.text.startsWith('top news')) {
+      await sendGlipMessage({ groupId: message.groupId, text: 'pong' })
+      return
+    }
+    const aiRes = await apiAi.send(message.text, message.groupId)
+    console.log(JSON.stringify(aiRes, null, 2))
+    if (message.text.startsWith('top news')) {
       const { news, link } = await getTopNews()
       await sendNewsToGlip({
         groupId: message.groupId,

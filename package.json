@@ -12,6 +12,7 @@
     "standard": "^10.0.3"
   },
   "dependencies": {
+    "apiai": "^4.0.3",
     "body-parser": "^1.18.2",
     "commander": "^2.12.2",
     "dotenv": "^4.0.0",
