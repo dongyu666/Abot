@@ -57,7 +57,7 @@ app.get('/oauth', async (req, res) => {
 async function getTopNews(entity) {
   let url = "https://api.cognitive.microsoft.com/bing/v7.0/news/?"
       + "count=5&mkt=en-US&originalImg=true";
-  if (entity) {
+  if (entity && entity.length > 0) {
     url = url + "&category=" + entity
   }
   const response = await request(url, {
@@ -66,10 +66,8 @@ async function getTopNews(entity) {
       'Ocp-Apim-Subscription-Key': process.env.BING_NEWS_KEY
     }
   })
-  console.log(response.data)
   if (response.status === 200) {
     const news = response.data.value || []
-    console.log(news[0])
     return { news, link: response.data.webSearchUrl }
   }
   return { news: [] }
@@ -84,7 +82,6 @@ async function searchNews(query) {
       'Ocp-Apim-Subscription-Key': process.env.BING_NEWS_KEY
     }
   })
-  console.log(response.data)
   if (response.status === 200) {
     const news = response.data.value || []
     console.log(news[0])
@@ -102,7 +99,6 @@ async function getTrendingNews() {
       'Ocp-Apim-Subscription-Key': process.env.BING_NEWS_KEY
     }
   })
-  console.log(response.data)
   if (response.status === 200) {
     const news = response.data.value || []
     console.log(news[0])
@@ -168,18 +164,21 @@ async function handleGlipMessage(message) {
     if (!aiRes || !aiRes.result) {
       return
     }
+    console.log(aiRes.result.action)
+    console.log(aiRes.result.parameters)
     if (aiRes.result.action === 'search_news') {
       const query = aiRes.result.parameters && aiRes.result.parameters.any
       const { news } = await searchNews(query)
       await sendNewsToGlip({
         groupId: message.groupId,
-        text: `Related News about query:`,
+        text: `Related News about ${query}:`,
         news
       })
       return
     }
     if (aiRes.result.action === 'top_news') {
-      const { news, link } = await getTopNews()
+      const query = aiRes.result.parameters && aiRes.result.parameters.any
+      const { news, link } = await getTopNews(query)
       await sendNewsToGlip({
         groupId: message.groupId,
         text: `[Current Top News:](${link})`,
