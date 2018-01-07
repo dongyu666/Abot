@@ -8,6 +8,7 @@ A [Glip](https://glip.com/) News bot with Dialogflow. Deployed on heroku.
 * Dialogflow(API.AI)
 * Bing Search API
 * Heroku
+* Redis
 
 ## Setup
 
