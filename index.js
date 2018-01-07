@@ -180,8 +180,8 @@ async function handleGlipMessage(message) {
     if (!aiRes || !aiRes.result) {
       return
     }
-    console.log('AI action:' aiRes.result.action)
-    console.log('AI parameters': aiRes.result.parameters)
+    console.log('AI action:', aiRes.result.action)
+    console.log('AI parameters:', aiRes.result.parameters)
     if (aiRes.result.action === 'search_news') {
       const query = aiRes.result.parameters && aiRes.result.parameters.any
       const { news } = await searchNews(query)
