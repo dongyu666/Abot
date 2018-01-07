@@ -17,12 +17,17 @@ const rcsdk = new RingCentral({
   server: process.env.GLIP_API_SERVER
 })
 const platform = rcsdk.platform()
-
-redis.getData('rc-oauth-token').then((data) => {
-  platform.auth().setData(data)
-}).catch(() => {
-  console.log('token not found')
-})
+let currentPerson = {};
+async function init() {
+  try {
+    const tokenData = redis.getData('rc-oauth-token')
+    platform.auth().setData(data)
+    currentPerson = await platform.get('/glip/posts/~')
+  } catch (e) {
+    console.log(e)
+    console.log('token not found')
+  }
+}
 
 const app = express()
 app.use(bodyParser.json())
@@ -46,6 +51,7 @@ app.get('/oauth', async (req, res) => {
     });
     const data = authResponse.json();
     await redis.setData(data, 'rc-oauth-token')
+    currentPerson = await platform.get('/glip/posts/~')
     console.log('oauth successfully.');
   } catch (e) {
     console.log('oauth error:');
@@ -154,6 +160,9 @@ async function handleGlipMessage(message) {
   if (!message) {
     return
   }
+  if (message.creatorId === currentPerson.id) {
+    return
+  }
   if (message.type === 'TextMessage') {
     console.log('message from glip:', message.text)
     if (message.text === 'ping') {
@@ -176,6 +185,7 @@ async function handleGlipMessage(message) {
       })
       return
     }
+
     if (aiRes.result.action === 'top_news') {
       const query = aiRes.result.parameters && aiRes.result.parameters.any
       const { news, link } = await getTopNews(query)
