@@ -46,7 +46,7 @@ app.get('/oauth', async (req, res) => {
   if(!req.query.code){
     res.status(500);
     res.send({"Error": "Looks like we're not getting code."});
-    console.log("Looks like we're not getting code.");
+    console.error("Looks like we're not getting code.");
     return;
   }
   console.log('starting oauth with code...');
@@ -79,7 +79,6 @@ async function getTopNews(entity) {
       'Ocp-Apim-Subscription-Key': process.env.BING_NEWS_KEY
     }
   })
-  console.log(response)
   if (response.status === 200) {
     const news = response.data.value || []
     return { news, link: response.data.webSearchUrl }
@@ -98,7 +97,6 @@ async function searchNews(query) {
   })
   if (response.status === 200) {
     const news = response.data.value || []
-    console.log(news[0])
     return { news, link: response.data.readLink }
   }
   return { news: [] }
@@ -106,7 +104,6 @@ async function searchNews(query) {
 
 async function getTrendingNews() {
   const url = "https://api.cognitive.microsoft.com/bing/v7.0/news/trendingtopics?mkt=en-us&count=5";
-  console.log(url)
   const response = await request(url, {
     dataType: 'json',
     headers: {
@@ -115,7 +112,6 @@ async function getTrendingNews() {
   })
   if (response.status === 200) {
     const news = response.data.value || []
-    console.log(news[0])
     return { news, link: response.data.webSearchUrl || response.data.readLink }
   }
   return { news: [] }
@@ -131,7 +127,6 @@ async function sendGlipMessage({ groupId, text, attachments }) {
 
 function formatNewsToMessages(news) {
   const attachments = []
-  console.log(JSON.stringify(news && news[0], null, 2))
   news.forEach((n) => {
     attachments.push({
       type: 'Card',
@@ -185,8 +180,8 @@ async function handleGlipMessage(message) {
     if (!aiRes || !aiRes.result) {
       return
     }
-    console.log(aiRes.result.action)
-    console.log(aiRes.result.parameters)
+    console.log('AI action:' aiRes.result.action)
+    console.log('AI parameters': aiRes.result.parameters)
     if (aiRes.result.action === 'search_news') {
       const query = aiRes.result.parameters && aiRes.result.parameters.any
       const { news } = await searchNews(query)
