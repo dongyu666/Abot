@@ -87,7 +87,7 @@ async function searchNews(query) {
   if (response.status === 200) {
     const news = response.data.value || []
     console.log(news[0])
-    return { news, link: response.data.webSearchUrl }
+    return { news, link: response.data.readLink }
   }
   return { news: [] }
 }
@@ -124,9 +124,9 @@ function formatNewsToMessages(news) {
     console.log(JSON.stringify(n, null, 2))
     attachments.push({
       type: 'Card',
-      fallback: `[${n.name}](${n.url || n.webSearchUrl})`,
-      text: n.name,
-      imageUri: n.image && n.image.contentUrl,
+      fallback: `[${n.name}](${n.url || n.webSearchUrl || n.readLink})`,
+      text: n.description,
+      imageUri: n.image && (n.image.contentUrl || n.image.url),
       author: {
         name: n.name,
         uri: n.url
@@ -172,7 +172,7 @@ async function handleGlipMessage(message) {
       const { news, link } = await getTrendingNews()
       await sendNewsToGlip({
         groupId: message.groupId,
-        text: `[Trending topics >](${link})`,
+        text: 'Trending topics:',
         news
       })
     } else if (message.text.startsWith('search news ')) {
