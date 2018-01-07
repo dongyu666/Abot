@@ -27,7 +27,6 @@ async function init() {
     platform.auth().setData(tokenData)
     const personResponse = await platform.get('/glip/persons/~')
     currentPerson = personResponse.json()
-    console.log(currentPerson)
   } catch (e) {
     console.log(e)
     console.log('token not found')
@@ -60,7 +59,6 @@ app.get('/oauth', async (req, res) => {
     await redis.setData(data, 'rc-oauth-token')
     const personResponse = await platform.get('/glip/persons/~')
     currentPerson = personResponse.json()
-    console.log(currentPerson)
     console.log('oauth successfully.');
   } catch (e) {
     console.log('oauth error:');
@@ -149,7 +147,7 @@ function formatNewsToMessages(news) {
       }
     })
   })
-  return attachments
+  return attachments.slice(0, 5)
 }
 
 async function sendNewsToGlip({
