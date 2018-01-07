@@ -55,7 +55,7 @@ app.get('/oauth', async (req, res) => {
 
 async function getTopNews(entity) {
   let url = "https://api.cognitive.microsoft.com/bing/v7.0/news/?"
-      + "count=10&mkt=en-US&originalImg=true";
+      + "count=5&mkt=en-US&originalImg=true";
   if (entity) {
     url = url + "&category=" + entity
   }
@@ -75,7 +75,7 @@ async function getTopNews(entity) {
 
 async function searchNews(query) {
   const url = "https://api.cognitive.microsoft.com/bing/v7.0/news/search?q=" +
-    query + "&count=10&mkt=en-us&originalImg=true";
+    query + "&count=5&mkt=en-us&originalImg=true";
   const response = await request(url, {
     dataType: 'json',
     headers: {
@@ -91,7 +91,7 @@ async function searchNews(query) {
 }
 
 async function getTrendingNews() {
-  const url = "https://api.cognitive.microsoft.com/bing/v7.0/news/trendingtopics?mkt=en-us&count=10";
+  const url = "https://api.cognitive.microsoft.com/bing/v7.0/news/trendingtopics?mkt=en-us&count=5";
   console.log(url)
   const response = await request(url, {
     dataType: 'json',
@@ -143,6 +143,7 @@ async function sendNewsToGlip({
   try {
     const attachments = formatNewsToMessages(news)
     await sendGlipMessage({ groupId, text, attachments })
+    console.log('send to', groupId, 'successfully.')
   } catch (e) {
     console.error(e)
   }
@@ -158,6 +159,21 @@ async function handleGlipMessage(message) {
       await sendGlipMessage({groupId: message.groupId, text: 'pong' })
     } else if (message.text.startsWith('top news')) {
       const { news, link } = await getTopNews()
+      await sendNewsToGlip({
+        groupId: message.groupId,
+        text: `[top news](${link})`,
+        news
+      })
+    } else if (message.text.startsWith('trending topics')) {
+      const { news, link } = await getTrendingNews()
+      await sendNewsToGlip({
+        groupId: message.groupId,
+        text: `[top news](${link})`,
+        news
+      })
+    } else if (message.text.startsWith('search news ')) {
+      const query = message.text.replace('search news ')
+      const { news, link } = await searchNews(query)
       await sendNewsToGlip({
         groupId: message.groupId,
         text: `[top news](${link})`,
